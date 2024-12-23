@@ -7,6 +7,7 @@ import (
 	"github.com/Eizeed/vibe_gogo/db"
 	"github.com/Eizeed/vibe_gogo/handlers"
 	"github.com/Eizeed/vibe_gogo/middleware"
+	"github.com/Eizeed/vibe_gogo/models"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -19,6 +20,10 @@ func main() {
 	}
 
     db.InitDB();
+
+    // Change in prod
+    db.GetDB().AutoMigrate(&models.User{})
+    db.GetDB().AutoMigrate(&models.Playlist{})
 
 	//Start the default gin server
 	app := gin.Default()
@@ -37,12 +42,16 @@ func main() {
 
         r.GET("/playlists/user/:uuid", playlists.GetByUserUuid);
         r.GET("/playlists/:uuid", playlists.GetByUuid);
-        r.POST("/playlists", playlists.Create);
-        r.PATCH("/playlists/:uuid/addtrack", playlists.AddTrack);
-        r.PATCH("/playlists/:uuid/deletetrack", playlists.Delete);
-        r.PUT("/playlists/:uuid", playlists.Update);
-        r.PUT("/playlists/:uuid/visibility", playlists.ChangeVisibility);
-        r.DELETE("/playlists/:uuid", playlists.Delete);
+        r.POST("/playlists", middleware.AuthMiddleware(), playlists.Create);
+        r.PATCH("/playlists/:uuid/addtrack", middleware.AuthMiddleware(), playlists.AddTrack);
+        r.PATCH("/playlists/:uuid/deletetrack", middleware.AuthMiddleware(), playlists.DeleteTrack);
+        r.PUT("/playlists/:uuid", middleware.AuthMiddleware(), playlists.Update);
+        r.PUT("/playlists/:uuid/visibility", middleware.AuthMiddleware(), playlists.ChangeVisibility);
+        r.DELETE("/playlists/:uuid", middleware.AuthMiddleware(), playlists.Delete);
+
+        deezer := handlers.DeezerHandler {};
+
+        r.GET("/deezer/search", deezer.Search);
     }
 
 

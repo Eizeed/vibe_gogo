@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Eizeed/vibe_gogo/forms"
@@ -74,8 +73,6 @@ func (h *UserHandler) Update(c *gin.Context) {
         c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
         return
     }
-
-    fmt.Println(token)
 
     claims, ok := token.(models.Claims);
     if !ok {
